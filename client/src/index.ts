@@ -1,7 +1,8 @@
 import { LoanClient } from './LoanClient';
 
 async function main(): Promise<void> {
-  const client = new LoanClient('http://localhost:8080');
+  const baseUrl = process.env.API_URL ?? 'http://localhost:8080';
+  const client = new LoanClient(baseUrl);
 
   // Create a new loan
   console.log('--- Creating loan ---');
