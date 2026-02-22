@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: LoanStreet Backend API
+  description: RESTful API for managing loan records. Supports creating, retrieving, and updating loans.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Loans
+    description: Loan management operations
+
+paths:
+  /api/loans:
+    post:
+      tags:
+        - Loans
+      summary: Create a new loan
+      description: Accepts loan properties and creates a new loan record. Returns the persisted entity with a generated UUID.
+      operationId: createLoan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanCreateRequest'
+      responses:
+        '201':
+          description: Loan created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid request payload
+
+  /api/loans/{id}:
+    get:
+      tags:
+        - Loans
+      summary: Retrieve a loan by ID
+      description: Fetches a loan record by its UUID. Returns 404 if the loan does not exist.
+      operationId: getLoan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the loan to retrieve
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Loan found and returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '404':
+          description: Loan not found
+
+    put:
+      tags:
+        - Loans
+      summary: Update an existing loan
+      description: Updates loan properties by UUID. Only provided fields are updated. Returns 404 if the loan does not exist.
+      operationId: updateLoan
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: UUID of the loan to update
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoanUpdateRequest'
+      responses:
+        '200':
+          description: Loan updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+        '404':
+          description: Loan not found
+        '400':
+          description: Invalid request payload
+
+components:
+  schemas:
+    Loan:
+      type: object
+      description: Complete loan entity including generated ID
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Auto-generated UUID for the loan
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        amount:
+          type: number
+          format: decimal
+          description: Loan amount
+          example: 10000.00
+        interestRate:
+          type: number
+          format: decimal
+          description: Annual interest rate as a decimal
+          example: 0.05
+        lengthInMonths:
+          type: integer
+          description: Loan term in months
+          example: 36
+        monthlyPaymentAmount:
+          type: number
+          format: decimal
+          description: Calculated monthly payment amount
+          example: 299.71
+      required:
+        - id
+        - amount
+        - interestRate
+        - lengthInMonths
+        - monthlyPaymentAmount
+
+    LoanCreateRequest:
+      type: object
+      description: Request payload for creating a new loan (ID is auto-generated)
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Loan amount
+          example: 10000.00
+          minimum: 0
+          exclusiveMinimum: true
+        interestRate:
+          type: number
+          format: decimal
+          description: Annual interest rate as a decimal (0 to 1)
+          example: 0.05
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 1.0
+        lengthInMonths:
+          type: integer
+          description: Loan term in months
+          example: 36
+          minimum: 1
+          maximum: 600
+        monthlyPaymentAmount:
+          type: number
+          format: decimal
+          description: Calculated monthly payment amount
+          example: 299.71
+          minimum: 0
+      required:
+        - amount
+        - interestRate
+        - lengthInMonths
+        - monthlyPaymentAmount
+
+    LoanUpdateRequest:
+      type: object
+      description: Request payload for a full replacement update of an existing loan. All fields are required.
+      properties:
+        amount:
+          type: number
+          format: decimal
+          description: Loan amount
+          example: 15000.00
+          minimum: 0
+          exclusiveMinimum: true
+        interestRate:
+          type: number
+          format: decimal
+          description: Annual interest rate as a decimal (0 to 1)
+          example: 0.045
+          minimum: 0
+          maximum: 1.0
+        lengthInMonths:
+          type: integer
+          description: Loan term in months
+          example: 48
+          minimum: 1
+          maximum: 600
+        monthlyPaymentAmount:
+          type: number
+          format: decimal
+          description: Calculated monthly payment amount
+          example: 342.05
+          minimum: 0
+          exclusiveMinimum: true
+      required:
+        - amount
+        - interestRate
+        - lengthInMonths
+        - monthlyPaymentAmount

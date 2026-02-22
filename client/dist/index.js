@@ -1,0 +1,33 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const LoanClient_1 = require("./LoanClient");
+async function main() {
+    const client = new LoanClient_1.LoanClient('http://localhost:8080');
+    // Create a new loan
+    console.log('--- Creating loan ---');
+    const created = await client.createLoan({
+        amount: 250000,
+        interestRate: 0.065,
+        lengthInMonths: 360,
+        monthlyPaymentAmount: 1580.17,
+    });
+    console.log('Created:', JSON.stringify(created, null, 2));
+    // Retrieve the created loan by ID
+    const { id } = created;
+    console.log(`\n--- Fetching loan ${id} ---`);
+    const fetched = await client.getLoan(id);
+    console.log('Fetched:', JSON.stringify(fetched, null, 2));
+    // Update the loan with new values (PUT requires all fields)
+    console.log(`\n--- Updating loan ${id} ---`);
+    const updated = await client.updateLoan(id, {
+        amount: 200000,
+        interestRate: 0.055,
+        lengthInMonths: 360,
+        monthlyPaymentAmount: 1264.14,
+    });
+    console.log('Updated:', JSON.stringify(updated, null, 2));
+}
+main().catch((err) => {
+    console.error('Error:', err.response?.data ?? err.message);
+    process.exit(1);
+});
