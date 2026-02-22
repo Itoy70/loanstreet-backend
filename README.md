@@ -5,7 +5,7 @@ REST API for managing loan records, built with Spring Boot 3, PostgreSQL, and Op
 ## Tech Stack
 
 - **Java 21** / **Spring Boot 3.4**
-- **PostgreSQL 17** with **Flyway** migrations
+- **PostgreSQL 18** with **Flyway** migrations
 - **OpenAPI Generator** — controllers and DTOs generated from `swagger.yaml`
 - **Lombok** — reduces boilerplate
 - **Docker Compose** — one-command local setup

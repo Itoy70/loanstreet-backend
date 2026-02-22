@@ -12,7 +12,7 @@ services:
       - postgres
 
   postgres:
-    image: postgres:17
+    image: postgres:18
     container_name: loanstreet-postgres
     environment:
       POSTGRES_DB: loanstreet
