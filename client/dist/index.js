@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const LoanClient_1 = require("./LoanClient");
+const LoanClient = require("./LoanClient");
+
 async function main() {
-    const client = new LoanClient_1.LoanClient('http://localhost:8080');
+    const client = new LoanClient.LoanClient('http://localhost:8080');
     // Create a new loan
     console.log('--- Creating loan ---');
     const created = await client.createLoan({

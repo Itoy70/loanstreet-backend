@@ -1,10 +1,9 @@
-import { LoanClient } from './LoanClient';
+import { LoanClient, LoanApiError } from './LoanClient';
 
 async function main(): Promise<void> {
   const baseUrl = process.env.API_URL ?? 'http://localhost:8080';
   const client = new LoanClient(baseUrl);
 
-  // Create a new loan
   console.log('--- Creating loan ---');
   const created = await client.createLoan({
     amount: 250000,
@@ -14,13 +13,11 @@ async function main(): Promise<void> {
   });
   console.log('Created:', JSON.stringify(created, null, 2));
 
-  // Retrieve the created loan by ID
-  const { id } = created;
+  const { id } = created.data;
   console.log(`\n--- Fetching loan ${id} ---`);
   const fetched = await client.getLoan(id);
   console.log('Fetched:', JSON.stringify(fetched, null, 2));
 
-  // Update the loan with new values (PUT requires all fields)
   console.log(`\n--- Updating loan ${id} ---`);
   const updated = await client.updateLoan(id, {
     amount: 200000,
@@ -32,6 +29,15 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error('Error:', err.response?.data ?? err.message);
+  if (err instanceof LoanApiError) {
+    console.error(`API error [${err.status}]: ${err.message} (requestId: ${err.requestId})`);
+    if (err.apiError.errors) {
+      for (const v of err.apiError.errors) {
+        console.error(`  - ${v.field}: ${v.message}`);
+      }
+    }
+  } else {
+    console.error('Error:', err.message);
+  }
   process.exit(1);
 });

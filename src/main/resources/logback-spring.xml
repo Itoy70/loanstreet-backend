@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_DIR" value="logs"/>
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] %logger{36} - %msg%n"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -10,34 +9,52 @@
         </encoder>
     </appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/loanstreet.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/loanstreet-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>500MB</totalSizeCap>
-        </rollingPolicy>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
+    <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <pattern>
+                    <pattern>
+                        {
+                            "severity": "%level",
+                            "time": "%date{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}",
+                            "message": "%message",
+                            "logger": "%logger",
+                            "thread": "%thread",
+                            "logging.googleapis.com/labels": {
+                                "requestId": "%mdc{requestId}"
+                            },
+                            "logging.googleapis.com/sourceLocation": {
+                                "file": "%file",
+                                "line": "%line",
+                                "function": "%method"
+                            }
+                        }
+                    </pattern>
+                </pattern>
+                <stackTrace/>
+            </providers>
         </encoder>
     </appender>
 
-    <logger name="com.loanstreet.backend" level="DEBUG"/>
-
     <springProfile name="default">
+        <logger name="com.loanstreet.backend" level="DEBUG"/>
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="test">
+        <logger name="com.loanstreet.backend" level="DEBUG"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
     <springProfile name="prod">
-        <root level="WARN">
-            <appender-ref ref="CONSOLE"/>
-            <appender-ref ref="FILE"/>
-        </root>
         <logger name="com.loanstreet.backend" level="INFO"/>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE_JSON"/>
+        </root>
     </springProfile>
 
 </configuration>

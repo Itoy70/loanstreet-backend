@@ -9,8 +9,11 @@ import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -37,10 +40,11 @@ public class LoanEntity {
     @Column(name = "monthly_payment_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal monthlyPaymentAmount;
 
-    /** 
-     * Consider adding updated time and created time fields to the entity
-     * Consider also adding created by and updated by fields to the entity
-     * Consider also adding deleted flag to the entity
-     *  
-     * */ 
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }

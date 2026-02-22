@@ -5,6 +5,8 @@ info:
   version: 1.0.0
 
 servers:
+  - url: https://loanstreet-backend-493662086412.us-central1.run.app
+    description: Production (Cloud Run)
   - url: http://localhost:8080
     description: Local development server
 
@@ -20,6 +22,8 @@ paths:
       summary: Create a new loan
       description: Accepts loan properties and creates a new loan record. Returns the persisted entity with a generated UUID.
       operationId: createLoan
+      parameters:
+        - $ref: '#/components/parameters/XRequestID'
       requestBody:
         required: true
         content:
@@ -29,12 +33,31 @@ paths:
       responses:
         '201':
           description: Loan created successfully
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Loan'
         '400':
           description: Invalid request payload
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
   /api/loans/{id}:
     get:
@@ -51,21 +74,50 @@ paths:
           schema:
             type: string
             format: uuid
+        - $ref: '#/components/parameters/XRequestID'
       responses:
         '200':
           description: Loan found and returned
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Loan'
+        '400':
+          description: Invalid request — malformed UUID
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '404':
           description: Loan not found
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
     put:
       tags:
         - Loans
       summary: Update an existing loan
-      description: Updates loan properties by UUID. Only provided fields are updated. Returns 404 if the loan does not exist.
+      description: Updates loan properties by UUID.
       operationId: updateLoan
       parameters:
         - name: id
@@ -75,6 +127,7 @@ paths:
           schema:
             type: string
             format: uuid
+        - $ref: '#/components/parameters/XRequestID'
       requestBody:
         required: true
         content:
@@ -84,14 +137,40 @@ paths:
       responses:
         '200':
           description: Loan updated successfully
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Loan'
         '404':
           description: Loan not found
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '400':
           description: Invalid request payload
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: Internal server error
+          headers:
+            X-Request-ID:
+              $ref: '#/components/headers/XRequestID'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
 components:
   schemas:
@@ -161,6 +240,7 @@ components:
           description: Calculated monthly payment amount
           example: 299.71
           minimum: 0
+          exclusiveMinimum: true
       required:
         - amount
         - interestRate
@@ -184,6 +264,7 @@ components:
           description: Annual interest rate as a decimal (0 to 1)
           example: 0.045
           minimum: 0
+          exclusiveMinimum: true
           maximum: 1.0
         lengthInMonths:
           type: integer
@@ -203,3 +284,61 @@ components:
         - interestRate
         - lengthInMonths
         - monthlyPaymentAmount
+
+    ApiError:
+      type: object
+      description: Standard error response returned by the API
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the error occurred
+          example: "2026-02-21T22:22:04Z"
+        error:
+          type: string
+          description: Short error description
+          example: "Validation failed"
+        errors:
+          type: array
+          description: List of field-level validation errors (only present for 400 validation errors)
+          items:
+            $ref: '#/components/schemas/FieldViolation'
+      required:
+        - timestamp
+        - error
+
+    FieldViolation:
+      type: object
+      description: Individual field validation error
+      properties:
+        field:
+          type: string
+          description: Name of the field that failed validation
+          example: "amount"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "must be greater than 0"
+      required:
+        - field
+        - message
+
+  parameters:
+    XRequestID:
+      name: X-Request-ID
+      in: header
+      required: false
+      description: Unique request identifier for request tracing. If not provided, a new one will be generated.
+      schema:
+        type: string
+        format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+  headers:
+    XRequestID:
+      required: true
+      description: Unique request identifier for request tracing. Always present — echoed from request or server-generated if not provided.
+      schema:
+        type: string
+        format: uuid
+      example: "550e8400-e29b-41d4-a716-446655440000"
