@@ -1,9 +1,16 @@
 spring:
   datasource:
-    url: jdbc:sqlite:loans.db
-    driver-class-name: org.sqlite.JDBC
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/loanstreet}
+    username: ${SPRING_DATASOURCE_USERNAME:loanstreet}
+    password: ${SPRING_DATASOURCE_PASSWORD:loanstreet}
+    driver-class-name: org.postgresql.Driver
   jpa:
-    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    open-in-view: false
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: validate
+    show-sql: true # Set to false in production
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration

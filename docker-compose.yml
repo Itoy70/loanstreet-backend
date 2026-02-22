@@ -1,0 +1,27 @@
+services:
+  backend:
+    build: .
+    container_name: loanstreet-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/loanstreet
+      SPRING_DATASOURCE_USERNAME: loanstreet
+      SPRING_DATASOURCE_PASSWORD: loanstreet
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:17
+    container_name: loanstreet-postgres
+    environment:
+      POSTGRES_DB: loanstreet
+      POSTGRES_USER: loanstreet
+      POSTGRES_PASSWORD: loanstreet
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

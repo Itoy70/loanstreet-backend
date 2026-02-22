@@ -1,5 +1,0 @@
-src/main/java/com/loanstreet/backend/api/ApiUtil.java
-src/main/java/com/loanstreet/backend/api/LoansApi.java
-src/main/java/com/loanstreet/backend/dto/Loan.java
-src/main/java/com/loanstreet/backend/dto/LoanCreateRequest.java
-src/main/java/com/loanstreet/backend/dto/LoanUpdateRequest.java
