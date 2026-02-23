@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -39,6 +40,10 @@ public class LoanEntity {
 
     @Column(name = "monthly_payment_amount", nullable = false, precision = 19, scale = 4)
     private BigDecimal monthlyPaymentAmount;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

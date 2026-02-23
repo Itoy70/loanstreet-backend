@@ -1,10 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const LoanClient = require("./LoanClient");
-
+const LoanClient_1 = require("./LoanClient");
 async function main() {
-    const client = new LoanClient.LoanClient('http://localhost:8080');
-    // Create a new loan
+    const baseUrl = process.env.API_URL ?? 'http://localhost:8080';
+    const client = new LoanClient_1.LoanClient(baseUrl);
     console.log('--- Creating loan ---');
     const created = await client.createLoan({
         amount: 250000,
@@ -13,12 +12,10 @@ async function main() {
         monthlyPaymentAmount: 1580.17,
     });
     console.log('Created:', JSON.stringify(created, null, 2));
-    // Retrieve the created loan by ID
-    const { id } = created;
+    const { id } = created.data;
     console.log(`\n--- Fetching loan ${id} ---`);
     const fetched = await client.getLoan(id);
     console.log('Fetched:', JSON.stringify(fetched, null, 2));
-    // Update the loan with new values (PUT requires all fields)
     console.log(`\n--- Updating loan ${id} ---`);
     const updated = await client.updateLoan(id, {
         amount: 200000,
@@ -29,6 +26,16 @@ async function main() {
     console.log('Updated:', JSON.stringify(updated, null, 2));
 }
 main().catch((err) => {
-    console.error('Error:', err.response?.data ?? err.message);
+    if (err instanceof LoanClient_1.LoanApiError) {
+        console.error(`API error [${err.status}]: ${err.message} (requestId: ${err.requestId})`);
+        if (err.apiError.errors) {
+            for (const v of err.apiError.errors) {
+                console.error(`  - ${v.field}: ${v.message}`);
+            }
+        }
+    }
+    else {
+        console.error('Error:', err.message);
+    }
     process.exit(1);
 });
